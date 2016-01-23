@@ -27,6 +27,14 @@ int nr_token = 0;
     nr_token++;
     return DIV;
 }
+"(" {
+    nr_token++;
+    return LP;
+}
+")" {
+    nr_token++;
+    return RP;
+}
 "\n" return CR;
 ([1-9][0-9]*)|0|([0-9]+\.[0-9]+) {
     nr_token++;
