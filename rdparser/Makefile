@@ -1,6 +1,6 @@
 CFILE := $(wildcard *.c)
 
-TARGET := llparser
+TARGET := rdparser
 
 $(TARGET): $(CFILE)
 	$(CC) -o $@ $(CFILE)

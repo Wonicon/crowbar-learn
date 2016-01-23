@@ -70,6 +70,14 @@ get_token(Token *token)
                 token->kind = DIV_OPERATOR_TOKEN;
                 return;
             }
+            if (current_char == '(') {
+                token->kind = LEFT_PAREN_TOKEN;
+                return;
+            }
+            if (current_char == ')') {
+                token->kind = RIGHT_PAREN_TOKEN;
+                return;
+            }
         }
 
         if (isdigit(current_char)) {
