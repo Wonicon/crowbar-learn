@@ -16,6 +16,15 @@ line_list: line
 line: expression CR
     {
         printf(">>%lf\n", $1);
+        extern nr_token;
+        nr_token = 0;
+    }
+    | error CR
+    {
+        yyclearin;
+        yyerrok;
+        extern nr_token;
+        nr_token = 0;
     }
     ;
 expression: term
@@ -39,13 +48,17 @@ term: primary_expression
     }
     ;
 primary_expression: DOUBLE_LITERAL
+                  {
+                      $$ = $1;
+                  }
                   ;
 %%
 int
 yyerror(const char *str)
 {
     extern char *yytext;
-    fprintf(stderr, "parser error near %s\n", yytext);
+    extern int nr_token;
+    fprintf(stderr, "parser error near %s at %d\n", yytext, nr_token);
     return 0;
 }
 

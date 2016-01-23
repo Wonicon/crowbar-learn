@@ -3,20 +3,36 @@
 #include "y.tab.h"
 
 int
-yywrap()
+yywrap(void)
 {
     return 1;
 }
+
+int nr_token = 0;
 %}
 %%
-"+" return ADD;
-"-" return SUB;
-"*" return MUL;
-"/" return DIV;
+"+" { 
+    nr_token++;
+    return ADD;
+}
+"-" {
+    nr_token++;
+    return SUB;
+}
+"*" {
+    nr_token++;
+    return MUL;
+}
+"/" {
+    nr_token++;
+    return DIV;
+}
 "\n" return CR;
 ([1-9][0-9]*)|0|([0-9]+\.[0-9]+) {
+    nr_token++;
     double temp;
     sscanf(yytext, "%lf", &temp);
+    yylval.double_value = temp;
     return DOUBLE_LITERAL;
 }
 [ \t] ;

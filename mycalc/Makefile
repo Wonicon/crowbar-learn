@@ -3,8 +3,8 @@ BISON := bison
 
 YFILE := $(wildcard *.y)
 LFILE := $(wildcard *.l)
-LCFILE := ./lex.yy.c
-YCFILE := ./y.tab.c
+LCFILE := lex.yy.c
+YCFILE := y.tab.c
 CFILE := $(filter-out $(LCFILE) $(YCFILE), $(wildcard *.c))
 
 COBJS := $(CFILE:%.c=%.o)
