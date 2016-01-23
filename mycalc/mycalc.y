@@ -52,6 +52,10 @@ primary_expression: DOUBLE_LITERAL
                   {
                       $$ = $2;
                   }
+                  | SUB primary_expression
+                  {
+                      $$ = -$2;
+                  }
                   ;
 %%
 int
