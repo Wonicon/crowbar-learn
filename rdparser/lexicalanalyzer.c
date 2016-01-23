@@ -100,9 +100,8 @@ set_line(char *line)
     st_line_pos = 0;
 }
 
-// Unit test
 void
-parse_line(char *buf)
+ut_lex_line(char *buf)
 {
     Token token;
 
@@ -119,7 +118,7 @@ parse_line(char *buf)
 }
 
 int
-main(int argc, char *argv[])
+ut_lex(int argc, char *argv[])
 {
     char buf[1024];
     while (fgets(buf, sizeof(buf), stdin) != NULL) {
