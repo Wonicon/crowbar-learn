@@ -1,15 +1,16 @@
 FLEX := flex
 BISON := bison
 
+CFLAGS := -Wall -Werror -I. -D DEBUG
+
 YFILE := $(wildcard *.y)
 LFILE := $(wildcard *.l)
-LCFILE := lex.yy.c
-YCFILE := y.tab.c
+LCFILE := ./lex.yy.c
+YCFILE := ./y.tab.c
 CFILE := $(filter-out $(LCFILE) $(YCFILE), $(shell find -name "*.c"))
-
-COBJS := $(CFILE:%.c=%.o)
 LOBJ := $(LCFILE:%.c=%.o)
 YOBJ := $(YCFILE:%.c=%.o)
+COBJS := $(CFILE:%.c=%.o)
 OBJS := $(COBJS) $(LOBJ) $(YOBJ)
 
 TARGET := crowbar
@@ -22,6 +23,12 @@ $(YCFILE): $(YFILE)
 
 $(LCFILE): $(LFILE) $(YCFILE)
 	$(FLEX) $(LFILE)
+
+$(LOBJ): $(LCFILE)
+	$(CC) -c $(LCFILE)
+
+$(YOBJ): $(YCFILE)
+	$(CC) -c $(YCFILE)
 
 .PHONY: clean
 
