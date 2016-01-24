@@ -5,13 +5,12 @@ YFILE := $(wildcard *.y)
 LFILE := $(wildcard *.l)
 LCFILE := lex.yy.c
 YCFILE := y.tab.c
-CFILE := $(filter-out $(LCFILE) $(YCFILE), $(wildcard *.c))
+CFILE := $(filter-out $(LCFILE) $(YCFILE), $(shell find -name "*.c"))
 
 COBJS := $(CFILE:%.c=%.o)
 LOBJ := $(LCFILE:%.c=%.o)
 YOBJ := $(YCFILE:%.c=%.o)
 OBJS := $(COBJS) $(LOBJ) $(YOBJ)
-#OBJS := $(COBJS)
 
 TARGET := crowbar
 
