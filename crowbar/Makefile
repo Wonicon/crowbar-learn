@@ -1,7 +1,7 @@
 FLEX := flex
 BISON := bison
 
-CFLAGS := -Wall -Werror -I. -D DEBUG
+CFLAGS := -Wall -Werror -I. -D DEBUG -std=c99
 
 YFILE := $(wildcard *.y)
 LFILE := $(wildcard *.l)
