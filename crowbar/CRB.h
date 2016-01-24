@@ -1,10 +1,12 @@
-#ifndef PUBLIC_CRB_H_INCLUDED
-#define PUBLIC_CRB_H_INCLUDED
+#ifndef CRB_H
+#define CRB_H
 
 #include <stdio.h>
 
+// CRB_Interpreter is an unimplemented type,
+// which could only be used as a handler.
 typedef struct CRB_Interpreter_tag CRB_Interpreter;
 
 CRB_Interpreter *CRB_create_interpreter();
 
-#endif // PUBLIC_CRB_H_INCLUDED
+#endif // CRB_H
