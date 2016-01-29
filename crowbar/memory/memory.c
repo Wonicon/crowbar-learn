@@ -53,21 +53,36 @@ chain_block(MEM_Controller controller, Header *new_header)
 }
 
 
-// delete_block: add a new block node in the tail.
-/* TODO
+// rechain_block: used by realloc
+static void
+rechain_block(MEM_Controller controller, Header *header)
+{
+    if (header->prev != NULL) {
+        header->prev->next = header;
+    }
+    else {
+        controller->block_header = header;
+    }
+    if (header->next != NULL) {
+        header->next->prev = header;
+    }
+}
+
+
+// unchain_block: delete a block
 static void
 unchain_block(MEM_Controller controller, Header *header)
 {
     if (header->prev != NULL) {
         header->prev->next = header->next;
-    } else {
+    }
+    else {
         controller->block_header = header->next;
     }
     if (header->next != NULL) {
         header->next->prev = header->prev;
     }
 }
-*/
 
 
 // set_header: initialize the memory block header.
@@ -87,6 +102,33 @@ set_tail(void *ptr, int alloc_size)
 {
     uint8_t *tail = ((uint8_t *)ptr) + alloc_size - MARK_SIZE;
     memset(tail, MARK, MARK_SIZE);
+}
+
+
+// check_mark_sub: sub procedure of check_mark
+void
+check_mark_sub(unsigned char *mark, int size)
+{
+    for (int i = 0; i < size; i++) {
+        if (mark[i] != MARK) {
+            fprintf(stderr, "bad mark\n");
+            abort();
+        }
+    }
+}
+
+
+void
+check_mark(Header *header)
+{
+    // Check header mark.
+    // Since mark is the last field of Header,
+    // (char *)&header[1] - (char *)header->mark can cover the mark and aligned bytes.
+    check_mark_sub(header->mark, (char *)&header[1] - (char *)header->mark);
+
+    // Check tail mark.
+    unsigned char *tail = ((unsigned char *)header) + header->size + sizeof(Header);
+    check_mark_sub(tail, MARK_SIZE);
 }
 #endif // DEBUG
 
@@ -118,3 +160,4 @@ MEM_malloc_func(MEM_Controller controller, const char *filename, int line, size_
 
     return ptr;
 }
+
