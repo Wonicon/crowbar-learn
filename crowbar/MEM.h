@@ -10,6 +10,7 @@ typedef enum {
 
 typedef struct MEM_Controller_tag *MEM_Controller;
 typedef void (*MEM_ErrorHandler)(FILE *, const char *, int, const char *);
+typedef struct MEM_Storage_tag *MEM_Storage;
 
 extern MEM_Controller mem_default_controller;
 
