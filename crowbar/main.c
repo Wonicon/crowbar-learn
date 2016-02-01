@@ -15,7 +15,14 @@ void ut_mem()
         assert(bytes[i] == 0xcc);
     }
 
-    MEM_create_controller();
+    bytes = MEM_malloc(nr_bytes);
+    for (size_t i = 0; i < nr_bytes; i++) {
+        assert(bytes[i] == 0xcc);
+    }
+
+    MEM_dump_blocks(stdout);
+
+    MEM_check_all_blocks();
 }
 #endif
 

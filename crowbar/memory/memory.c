@@ -24,12 +24,20 @@ union Header_tag {
 
 
 static void
-error_handler(MEM_Controller controller, char *filename, int line, const char *msg)
+default_error_handler(FILE *error_fp, const char *filename, int line, const char *msg)
 {
-    if (controller->error_fp == NULL) {
-        controller->error_fp = stderr;
-    }
-    controller->error_handler(controller, filename, line, msg);
+    fprintf(error_fp,
+            "MEM:%s failed in %s at %d\n", msg, filename, line);
+}
+
+
+static void
+error_handler(MEM_Controller controller, const char *filename, int line, const char *msg)
+{
+    FILE *error_fp = (controller->error_file == NULL) ? stderr :
+        fopen(controller->error_file, "a");
+
+    controller->error_handler(error_fp, filename, line, msg);
 
     if (controller->fail_mode == MEM_FAIL_AND_EXIT) {
         exit(1);
@@ -37,7 +45,11 @@ error_handler(MEM_Controller controller, char *filename, int line, const char *m
 }
 
 
-static struct MEM_Controller_tag st_default_controller;
+static struct MEM_Controller_tag st_default_controller = {
+    NULL,
+    default_error_handler,
+    MEM_FAIL_AND_EXIT
+};
 MEM_Controller mem_default_controller = &st_default_controller;
 
 
@@ -160,8 +172,7 @@ MEM_malloc_func(MEM_Controller controller, const char *filename, int line, size_
     void *ptr = malloc(alloc_size);
 
     if (ptr == NULL) {
-        fprintf(stderr, "malloc error\n");
-        exit(1);
+        error_handler(controller, filename, line, "malloc");
     }
 
 #ifdef DEBUG
@@ -182,6 +193,7 @@ MEM_realloc_func(MEM_Controller controller, const char *filename, int line, void
     void *new_ptr;
     size_t alloc_size;
     void *real_ptr;
+
 #ifdef DEBUG
     Header old_header;
     int old_size;
@@ -215,15 +227,25 @@ MEM_realloc_func(MEM_Controller controller, const char *filename, int line, void
 
 #ifdef DEBUG
     if (real_ptr != NULL) {
-        // realloc
+        // Re-alloc
         *(Header *)new_ptr = old_header;
+        // Update size field.
         ((Header *)new_ptr)->size = size;
+
         // Relink to where it used to be linked.
+        // When debugging, reallocated memory block may have a new memory area,
+        // but the data is reserved, which means that using this reallocated
+        // memory header, we can find its preccedence and its successor,
+        // but its preccedence and its successor may contain a wrong pointer
+        // which points to the old memory block. So a re-chain process is needed.
+        // TODO check whether we need to unchain the node and save the content
+        // of the header onto stack?
         rechain_block(controller, (Header *)new_ptr);
+
         set_tail(new_ptr, alloc_size);
     }
     else {
-        // realloc acts as malloc
+        // Re-alloc acts as malloc
         set_header(new_ptr, size, filename, line);
         set_tail(new_ptr, alloc_size);
         chain_block(controller, (Header *)new_ptr);
@@ -237,3 +259,113 @@ MEM_realloc_func(MEM_Controller controller, const char *filename, int line, void
     return new_ptr;
 }
 
+
+// MEM_strdup_func:
+//   Private function that does the same work as strdup
+//   but would add more information when debugging.
+//   As you can see, this function share most of its body
+//   with MEM_malloc_func. The reason why we do not implement
+//   MEM_strdup_func as a wrapper upon MEM_malloc_func is that
+//   the cause string of error_handler needs to be different.
+char *
+MEM_strdup_func(MEM_Controller controller, const char *filename, int line, const char *str)
+{
+    int size = strlen(str) + 1;
+
+#ifdef DEBUG
+    size_t alloc_size = size + sizeof(Header) + MARK_SIZE;
+#else
+    size_t alloc_size = size;
+#endif
+
+    char *ptr = malloc(alloc_size);
+    if (ptr == NULL) {
+        error_handler(controller, filename, line, "strdup");
+    }
+
+#ifdef DEBUG
+    memset(ptr, 0xCC, alloc_size);
+    set_header((Header *)ptr, size, filename, line);
+    set_tail(ptr, alloc_size);
+    chain_block(controller, (Header *)ptr);
+    ptr = (char *)ptr + sizeof(Header);  // Jump the header
+#endif
+    // TODO: check whether strcpy automatically insert '\0'?
+    strcpy(ptr, str);
+
+    return ptr;
+}
+
+
+void
+MEM_free_func(MEM_Controller controller, void *ptr)
+{
+    if (ptr == NULL) {
+        return;
+    }
+
+#ifdef DEBUG
+    void *real_ptr = (char *)ptr - sizeof(Header);
+    check_mark((Header *)real_ptr);
+    int size = ((Header *)real_ptr)->size;
+    unchain_block(controller, real_ptr);
+    memset(real_ptr, 0xCC, size + sizeof(Header) + MARK_SIZE);
+#else
+    void *real_ptr = ptr;
+#endif
+
+    free(real_ptr);
+}
+
+
+void
+MEM_set_error_handler(MEM_Controller controller, MEM_ErrorHandler handler)
+{
+    controller->error_handler = handler;
+}
+
+
+void
+MEM_set_fail_mode(MEM_Controller controller, MEM_FailMode mode)
+{
+    controller->fail_mode = mode;
+}
+
+
+// MEM_dump_blocks_func:
+//   Private function.
+//   The soul of this memory module
+void
+MEM_dump_blocks_func(MEM_Controller controller, FILE *fp)
+{
+#ifdef DEBUG
+    int counter = 0;
+    for (Header *pos = controller->block_header; pos != NULL; pos = pos->next) {
+        check_mark(pos);
+        fprintf(fp, "[%04d]%p:\n", counter, (char *)pos + sizeof(Header));
+        fprintf(fp, "allocater %s line %d size %d\n", pos->filename, pos->line, pos->size);
+        counter++;
+    }
+#endif
+}
+
+
+void
+MEM_check_block_func(MEM_Controller controller, char *filename, int line, void *p)
+{
+#ifdef DEBUG
+    void *real_ptr = ((char *)p) - sizeof(Header);
+    check_mark(real_ptr);
+#endif
+}
+
+
+void
+MEM_check_all_blocks_func(MEM_Controller controller, const char *filename, int line)
+{
+#ifdef DEBUG
+    for (Header *pos = controller->block_header; pos != NULL; pos = pos->next) {
+        check_mark(pos);
+    }
+#endif
+}
