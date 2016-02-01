@@ -4,7 +4,8 @@
 #define YYDEBUG 1
 %}
 %union {
-    char *identifier;
+    char       *identifier;
+    Expression *expression;
 }
 %token INT_LITERAL
 %token DOUBLE_LITERAL
