@@ -52,7 +52,7 @@ MEM_Open_storage_func(MEM_Controller controller, const char *filename, int line,
 }
 
 void *
-MEM_Storage_malloc_func(MEM_Controller controller, const char *filename, int line, MEM_Storage storage, size_t size)
+MEM_storage_malloc_func(MEM_Controller controller, const char *filename, int line, MEM_Storage storage, size_t size)
 {
     int cell_num = ((size - 1) / CELL_SIZE) + 1;  // (size / CELL_SIZE) 上去整
 

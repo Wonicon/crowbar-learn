@@ -63,4 +63,8 @@ char *crb_create_identifier(const char *id);
 // 表达式结构体构造函数
 Expression *crb_alloc_expression(ExpressionType type);
 
+// From util.c
+CRB_Interpreter *crb_get_current_interpreter();
+void *crb_malloc(size_t size);
+
 #endif // CROWBAR_H
