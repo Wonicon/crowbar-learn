@@ -1,7 +1,7 @@
 FLEX := flex
 BISON := bison
 
-CFLAGS := -Wall -Werror -I. -D DEBUG -std=c99
+CFLAGS := -Wall -Werror -Wfatal-errors -I. -D DEBUG -std=gnu11
 
 YFILE := $(wildcard *.y)
 LFILE := $(wildcard *.l)
@@ -25,10 +25,10 @@ $(LCFILE): $(LFILE) $(YCFILE)
 	$(FLEX) $(LFILE)
 
 $(LOBJ): $(LCFILE)
-	$(CC) -c $(LCFILE)
+	$(CC) $(CFLAGS) -Wno-unused-function -c $(LCFILE)
 
 $(YOBJ): $(YCFILE)
-	$(CC) -c $(YCFILE)
+	$(CC) $(CFLAGS) -Wno-unused-function -c $(YCFILE)
 
 .PHONY: clean
 
