@@ -71,11 +71,11 @@ definition_or_statement
 function_definition
     : FUNCTION IDENTIFIER LP parameter_list RP block
     {
-        CRB_function_define($2, $4, $6);
+        crb_function_define($2, $4, $6);
     }
     | FUNCTION IDENTIFIER LP RP block
     {
-        CRB_function_define($2, NULL, $5);
+        crb_function_define($2, NULL, $5);
     }
     ;
 parameter_list
@@ -203,7 +203,7 @@ primary_expression
     }
     | LP expression RP
     {
-        $$ = $2
+        $$ = $2;
     }
     | IDENTIFIER
     {
