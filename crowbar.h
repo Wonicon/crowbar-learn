@@ -308,7 +308,7 @@ IdentifierList *
 crb_create_global_identifier(const char *name);
 
 IdentifierList *
-crb_create_chain_identifier(IdentifierList *list, const char *name);
+crb_chain_identifier(IdentifierList *list, const char *name);
 
 Statement *
 crb_create_global_statement(IdentifierList *identifier_list);
@@ -338,7 +338,7 @@ Statement *
 crb_create_break_statement();
 
 Statement *
-crb_create_continue();
+crb_create_continue_statement();
 
 Block *
 crb_create_block(StatementList *list);

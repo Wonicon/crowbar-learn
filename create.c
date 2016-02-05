@@ -188,7 +188,7 @@ crb_create_global_identifier(const char *identifier)
 }
 
 IdentifierList *
-crb_create_chain_identifier(IdentifierList *list, const char *identifier)
+crb_chain_identifier(IdentifierList *list, const char *identifier)
 {
     IdentifierList *new_node = crb_create_global_identifier(identifier);
     IdentifierList *curr;
@@ -279,7 +279,7 @@ crb_create_break_statement()
 }
 
 Statement *
-crb_create_continue()
+crb_create_continue_statement()
 {
     Statement *stmt = alloc_statement(CONTINUE_STATEMENT);
     return stmt;

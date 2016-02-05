@@ -252,7 +252,7 @@ identifier_list
     }
     | identifier_list COMMA IDENTIFIER
     {
-        $$ = crb_create_chain_identifier($1, $3);
+        $$ = crb_chain_identifier($1, $3);
     }
     ;
 if_statement
@@ -320,7 +320,7 @@ break_statement
 continue_statement
     : CONTINUE SEMICOLON
     {
-        $$ = crb_create_continue();
+        $$ = crb_create_continue_statement();
     }
     ;
 block

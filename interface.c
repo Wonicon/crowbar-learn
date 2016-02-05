@@ -29,8 +29,7 @@ CRB_compile(CRB_Interpreter *interpreter, FILE *fp)
     crb_set_current_interpreter(interpreter);
     yyin = fp;
     if (yyparse()) {
-        fprintf(stderr, "Syntax error\n");
-        abort();
+        exit(1);
     }
 }
 

@@ -14,7 +14,7 @@ yywrap(void)
 static void
 increment_line_number()
 {
-    // TODO
+    crb_get_current_interpreter()->current_line_number++;
 }
 %}
 %start COMMENT STRING_LITERAL_STATE
