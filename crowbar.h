@@ -8,6 +8,49 @@
 #define min(a,b) ((a) < (b) ? (a) : (b))
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
+typedef enum {
+    CRB_BOOLEN_VALUE,
+    CRB_INT_VALUE,
+    CRB_DOUBLE_VALUE,
+    CRB_NATIVE_POINTER_VALUE,
+    CRB_NULL_VALUE,
+} CRB_ValueType;
+
+typedef enum {
+    CRB_FALSE,
+    CRB_TRUE,
+} CRB_Boolean;
+
+typedef struct {
+    int         ref_coutn;
+    char       *string;
+    CRB_Boolean is_literal;
+} CRB_String;
+typedef struct {
+    const char *name;
+} CRB_NativePointerInfo;
+
+typedef struct {
+    CRB_NativePointerInfo *info;
+    void                  *pointer;
+} CRB_NativePointer;
+
+typedef struct {
+    CRB_ValueType type;
+    union {
+        CRB_Boolean       boolean_type;
+        int               int_value;
+        double            double_valube;
+        CRB_String       *string_value;
+        CRB_NativePointer native_pointer;
+    } u;
+} CRB_Value;
+
+typedef struct {
+    void *TODO;
+} Variable;
+
+
 // 集中提前 typedef struct 类型,
 // 方便写链表的 next 域时简化代码,
 // 同时允许灵活安排结构体的定义位置.
@@ -19,10 +62,6 @@ typedef struct ArgumentList_tag       ArgumentList;
 typedef struct ParameterList_tag      ParameterList;
 typedef struct IdentifierList_tag     IdentifierList;
 typedef struct Elsif                  Elsif;
-
-typedef struct {
-    void *TODO;
-} Variable;
 
 // 实参链表
 struct ArgumentList_tag {
@@ -41,17 +80,57 @@ typedef enum {
     INT_EXPRESSION,
     DOUBLE_EXPRESSION,
     STRING_EXPRESSION,
+    BOOLEAN_EXPRESSION,
+    IDENTIFIER_EXPRESSION,
+    ASSIGN_EXPRESSION,
+    ADD_EXPRESSION,
+    SUB_EXPRESSION,
+    MUL_EXPRESSION,
+    DIV_EXPRESSION,
+    MOD_EXPRESSION,
+    EQ_EXPRESSION,
+    NE_EXPRESSION,
+    GT_EXPRESSION,
+    GE_EXPRESSION,
+    LT_EXPRESSION,
+    LE_EXPRESSION,
+    LOGICAL_AND_EXPRESSION,
+    LOGICAL_OR_EXPRESSION,
+    MINUS_EXPRESSION,
+    FUNCTION_CALL_EXPRESSION,
+    NULL_EXPRESSION,
+    EXPRESSION_TYPE_COUNT,
 } ExpressionType;
+
+typedef struct {
+    const char *variable;
+    Expression *operand;
+} AssignExpression;
+
+typedef struct {
+    Expression *left;
+    Expression *right;
+} BinaryExpression;
+
+typedef struct {
+    const char   *identifier;
+    ArgumentList *argument;
+} FunctionCallExpression;
 
 // 表达式
 struct Expression_tag {
     ExpressionType type;
     int line_number;
     union {
-        char  *identifier;
-        char  *string_value;
-        int    int_value;
-        double double_value;
+        const char            *identifier;
+        char                  *string_value;
+        int                    int_value;
+        int                    boolean_value;
+        double                 double_value;
+        AssignExpression       assign_expression;
+        BinaryExpression       binary_expression;
+        Expression            *minus_expression;
+        FunctionCallExpression function_call_expression;
     } u;
 };
 
@@ -139,9 +218,21 @@ struct IdentifierList_tag {
 };
 
 // 函数定义
+typedef enum {
+    CROWBAR_FUNCTION_DEFINITION,
+    NATIVE_FUNCTION_DEFINITION,
+} FunctionDefinitionType;
+
 struct FunctionDefinition_tag {
-    void *implement_me;
-    struct FunctionDefinition_tag *next;
+    FunctionDefinitionType type;
+    const char            *name;
+    FunctionDefinition    *next;
+    union {
+        struct {
+            ParameterList *parameter;
+            Block         *block;
+        } crowbar_f;
+    } u;
 };
 
 // 解释器
@@ -161,11 +252,60 @@ char *crb_close_string_literal();
 
 char *crb_create_identifier(const char *id);
 
-// 表达式结构体构造函数
-Expression *crb_alloc_expression(ExpressionType type);
+// From create.c
+void
+crb_function_define(const char *name, ParameterList *parameter_list, Block *block);
+
+StatementList *
+crb_create_statement_list(Statement *statement);
+
+StatementList *
+crb_chain_statement_list(StatementList *list, Statement *statement);
+
+ParameterList *
+crb_create_parameter(const char *name);
+
+ParameterList *
+crb_chain_parameter(ParameterList *list, const char *name);
+
+ArgumentList *
+crb_create_argument_list(Expression *expression);
+
+ArgumentList *
+crb_chain_argument_list(ArgumentList *list, Expression *expression);
+
+Expression *
+crb_alloc_expression(ExpressionType type);
+
+Expression *
+crb_create_assign_expression(const char *variable, Expression *operand);
+
+Expression *
+crb_create_binary_expression(ExpressionType operator, Expression *left, Expression *right);
+
+Expression *
+crb_create_minus_expression(Expression *expression);
+
+Expression *
+crb_create_function_call_expression(const char *identifier, ArgumentList *argument);
+
+Expression *
+crb_create_identifier_expression(const char *identifier);
+
+Expression *
+crb_create_boolean_expression(CRB_Boolean value);
+
+Expression *
+crb_create_null_expression();
 
 // From util.c
 CRB_Interpreter *crb_get_current_interpreter();
+
+void crb_set_current_interpreter(CRB_Interpreter *interpreter);
+
+FunctionDefinition *
+crb_search_function(const char *name);
+
 void *crb_malloc(size_t size);
 
 #endif // CROWBAR_H
