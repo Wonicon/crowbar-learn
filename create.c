@@ -169,3 +169,127 @@ crb_create_null_expression()
     return expression;
 }
 
+static Statement *
+alloc_statement(StatementType type)
+{
+    Statement *stmt = crb_malloc(sizeof(Statement));
+    stmt->type = type;
+    stmt->line_number = crb_get_current_interpreter()->current_line_number;
+    return stmt;
+}
+
+IdentifierList *
+crb_create_global_identifier(const char *identifier)
+{
+    IdentifierList *list = crb_malloc(sizeof(IdentifierList));
+    list->name = identifier;
+    list->next = NULL;
+    return list;
+}
+
+IdentifierList *
+crb_create_chain_identifier(IdentifierList *list, const char *identifier)
+{
+    IdentifierList *new_node = crb_create_global_identifier(identifier);
+    IdentifierList *curr;
+    for (curr = list; curr->next != NULL; curr = curr->next) ;
+    curr->next = new_node;
+    return curr;
+}
+
+Statement *
+crb_create_global_statement(IdentifierList *identifier_list)
+{
+    Statement *stmt = alloc_statement(GLOBAL_STATEMENT);
+    stmt->u.global_s.identifier_list = identifier_list;
+    return stmt;
+}
+
+Statement *
+crb_create_expression_statement(Expression *expression)
+{
+    Statement *stmt = alloc_statement(EXPRESSION_STATEMENT);
+    stmt->u.expression_s = expression;
+    return stmt;
+}
+
+Statement *
+crb_create_if_statement(Expression *condition, Block *then_block, Elsif *elsif_list, Block *else_block)
+{
+    Statement *stmt = alloc_statement(IF_STATEMENT);
+    stmt->u.if_s.condition = condition;
+    stmt->u.if_s.then_block = then_block;
+    stmt->u.if_s.elsif_list = elsif_list;
+    stmt->u.if_s.else_block = else_block;
+    return stmt;
+}
+
+Elsif *
+crb_create_elsif(Expression *condition, Block *block)
+{
+    Elsif *elsif = crb_malloc(sizeof(Elsif));
+    elsif->condition = condition;
+    elsif->block = block;
+    elsif->next = NULL;
+    return elsif;
+}
+
+Elsif *
+crb_chain_elsif_list(Elsif *list, Elsif *add)
+{
+    Elsif *curr;
+    for (curr = list; curr->next != NULL; curr = curr->next) ;
+    curr->next = add;
+    return list;
+}
+
+Statement *
+crb_create_while_statement(Expression *condition, Block *block)
+{
+    Statement *stmt = alloc_statement(WHILE_STATEMENT);
+    stmt->u.while_s.condition = condition;
+    stmt->u.while_s.block = block;
+    return stmt;
+}
+
+Statement *
+crb_create_for_statement(Expression *init, Expression *condition, Expression *post, Block *block)
+{
+    Statement *stmt = alloc_statement(FOR_STATEMENT);
+    stmt->u.for_s.init = init;
+    stmt->u.for_s.condition = condition;
+    stmt->u.for_s.post = post;
+    stmt->u.for_s.block = block;
+    return stmt;
+}
+
+Statement *
+crb_create_return_statement(Expression *expression)
+{
+    Statement *stmt = alloc_statement(RETURN_STATEMENT);
+    stmt->u.return_s.return_value = expression;
+    return stmt;
+}
+
+Statement *
+crb_create_break_statement()
+{
+    Statement *stmt = alloc_statement(BREAK_STATEMENT);
+    return stmt;
+}
+
+Statement *
+crb_create_continue()
+{
+    Statement *stmt = alloc_statement(CONTINUE_STATEMENT);
+    return stmt;
+}
+
+Block *
+crb_create_block(StatementList *list)
+{
+    Block *block = crb_malloc(sizeof(Block));
+    block->statement_list = list;
+    return block;
+}
+

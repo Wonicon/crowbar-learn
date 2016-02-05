@@ -36,7 +36,7 @@ struct MEM_Storage_tag {
 // 只申请了存储器结构体所需要的空间, 没有申请存储器拥有的数据区空间
 // page_size > 0, 如果 page_size 为 0, 则设置默认的 page_size
 MEM_Storage
-MEM_Open_storage_func(MEM_Controller controller, const char *filename, int line, int page_size)
+MEM_open_storage_func(MEM_Controller controller, const char *filename, int line, int page_size)
 {
     MEM_Storage storage;
 

@@ -3,6 +3,7 @@
 #include "crowbar.h"
 #define YYDEBUG 1
 char yylex(void);
+int yyerror(const char *);
 %}
 %union {
     char           *identifier;
@@ -336,4 +337,5 @@ block
 int yyerror(const char *s)
 {
     fprintf(stderr, "%s\n", s);
+    return 0;
 }

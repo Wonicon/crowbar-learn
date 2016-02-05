@@ -61,7 +61,7 @@ typedef struct FunctionDefinition_tag FunctionDefinition;
 typedef struct ArgumentList_tag       ArgumentList;
 typedef struct ParameterList_tag      ParameterList;
 typedef struct IdentifierList_tag     IdentifierList;
-typedef struct Elsif                  Elsif;
+typedef struct Elsif_tag              Elsif;
 
 // 实参链表
 struct ArgumentList_tag {
@@ -157,6 +157,12 @@ typedef struct {
     Elsif      *elsif_list;
     Block      *else_block;
 } IfStatement;
+
+struct Elsif_tag {
+    Expression *condition;
+    Block      *block;
+    Elsif      *next;
+};
 
 // while 循环语句
 typedef struct {
@@ -297,6 +303,45 @@ crb_create_boolean_expression(CRB_Boolean value);
 
 Expression *
 crb_create_null_expression();
+
+IdentifierList *
+crb_create_global_identifier(const char *name);
+
+IdentifierList *
+crb_create_chain_identifier(IdentifierList *list, const char *name);
+
+Statement *
+crb_create_global_statement(IdentifierList *identifier_list);
+
+Statement *
+crb_create_expression_statement(Expression *expression);
+
+Statement *
+crb_create_if_statement(Expression *condition, Block *then_block, Elsif *elsif_list, Block *else_block);
+
+Elsif *
+crb_create_elsif(Expression *condition, Block *block);
+
+Elsif *
+crb_chain_elsif_list(Elsif *list, Elsif *add);
+
+Statement *
+crb_create_while_statement(Expression *condition, Block *block);
+
+Statement *
+crb_create_for_statement(Expression *init, Expression *condition, Expression *post, Block *block);
+
+Statement *
+crb_create_return_statement(Expression *return_value);
+
+Statement *
+crb_create_break_statement();
+
+Statement *
+crb_create_continue();
+
+Block *
+crb_create_block(StatementList *list);
 
 // From util.c
 CRB_Interpreter *crb_get_current_interpreter();
