@@ -7,9 +7,10 @@
 void
 crb_function_define(const char *identifier, ParameterList *parameter_list, Block *block)
 {
-    if (crb_search_function(identifier) == NULL) {
-        fprintf(stderr, "Redefined of function %s", identifier);
-        abort();
+    if (crb_search_function(identifier) != NULL) {
+        fprintf(stderr, "Line %d: redefined of function %s\n",
+                crb_get_current_interpreter()->current_line_number, identifier);
+        exit(1);
     }
 
     CRB_Interpreter *interpreter =
