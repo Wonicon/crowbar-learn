@@ -50,7 +50,7 @@ void MEM_check_all_blocks_func(MEM_Controller controller, const char *filename, 
 #define MEM_dispose_storage(storage)\
     MEM_dispose_storage_func(CURRENT_MEM_CONTROLLER, storage)
 #define MEM_free(ptr)\
-    MEM_free_func(CURRENT_MEM_CONTROLLER, __FILE__, __LINE__, ptr)
+    MEM_free_func(CURRENT_MEM_CONTROLLER, ptr)
 
 #ifdef DEBUG
 #define MEM_dump_blocks(fp)\
