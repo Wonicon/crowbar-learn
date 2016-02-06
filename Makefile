@@ -1,7 +1,7 @@
 FLEX := flex
 BISON := bison
 
-CFLAGS := -Wall -Werror -Wfatal-errors -I. -ggdb3
+CFLAGS := -Wall -Werror -Wfatal-errors -I. -ggdb3 -MD
 
 YFILE := $(wildcard *.y)
 LFILE := $(wildcard *.l)
@@ -17,6 +17,7 @@ TARGET := crowbar
 
 $(TARGET): $(OBJS)
 	$(CC) -o $(TARGET) $(OBJS)
+	@ctags -R * 2> /dev/null
 
 $(YCFILE): $(YFILE)
 	$(BISON) --yacc -dv $(YFILE)
@@ -37,5 +38,6 @@ clean:
 	@rm -f *.tab.* 2> /dev/null
 	@rm -f *.output 2> /dev/null
 	@rm -f *.o 2> /dev/null
+	@rm -f `find -name "*.d"` 2> /dev/null
 	@rm -f $(TARGET) 2> /dev/null
 
