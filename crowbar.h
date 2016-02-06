@@ -251,10 +251,14 @@ struct CRB_Interpreter_tag {
     int                 current_line_number;
 };
 
-// 词法分析中用于设置字符串常量的相关 api
+// From string.c
 void crb_open_string_literal();
+
 void crb_add_string_literal(char ch);
+
 char *crb_close_string_literal();
+
+void crb_reset_string_literal();
 
 char *crb_create_identifier(const char *id);
 

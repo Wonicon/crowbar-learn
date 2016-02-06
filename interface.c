@@ -31,5 +31,6 @@ CRB_compile(CRB_Interpreter *interpreter, FILE *fp)
     if (yyparse()) {
         exit(1);
     }
+    crb_reset_string_literal();
 }
 

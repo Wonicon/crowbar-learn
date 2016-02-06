@@ -34,6 +34,16 @@ crb_close_string_literal()
     return new_str;
 }
 
+// 回收动态分配的字符串缓冲区
+void
+crb_reset_string_literal()
+{
+    MEM_free(st_string_literal_buffer);
+    st_string_literal_buffer = NULL;
+    st_string_literal_buffer_size = 0;
+    st_string_literal_buffer_alloc_size = 0;
+}
+
 // 用来分配标识符字符串空间, 功能相当与 strdup,
 // 但是将分配空间置于 Storage 的管理之下
 char *
