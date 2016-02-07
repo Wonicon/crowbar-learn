@@ -71,8 +71,7 @@ void CRB_add_global_variable(CRB_Interpreter *interpreter,
                              CRB_Value       *value)
 {
     Variable *new_variable = crb_execute_malloc(interpreter, sizeof(Variable));
-    new_variable->name = crb_execute_malloc(interpreter, strlen(identifier) + 1);
-    strcpy(new_variable->name, identifier);
+    new_variable->name = identifier;
     new_variable->value = *value;
     new_variable->next = interpreter->variable;
     interpreter->variable = new_variable;
