@@ -107,18 +107,6 @@ void crb_add_local_variable(LocalEnvironment *env, const char *identifier, CRB_V
     env->variable = new_var;
 }
 
-/**
- * 注册全局变量一定发生在顶层作用域, 所以不需要 env
- */
-void crb_add_global_variable(CRB_Interpreter *interpreter, const char *identifier, CRB_Value *value)
-{
-    Variable *new_var = MEM_malloc(sizeof(Variable));
-    new_var->name = identifier;
-    new_var->value = *value;
-    new_var->next = interpreter->variable;
-    interpreter->variable = new_var;
-}
-
 static CRB_Value eval_identifier_expression(CRB_Interpreter  *interpreter,
                                             LocalEnvironment *env,
                                             Expression       *expr)
@@ -156,7 +144,7 @@ static CRB_Value eval_assign_expression(CRB_Interpreter  *interpreter,
     }
     else {
         if (env == NULL) {
-            crb_add_global_variable(interpreter, identifier, &value);
+            CRB_add_global_variable(interpreter, identifier, &value);
         }
         else {
             crb_add_local_variable(env, identifier, &value);

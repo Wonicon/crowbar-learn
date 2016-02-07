@@ -65,7 +65,9 @@ Variable *crb_search_global(CRB_Interpreter *interpreter,
     return NULL;
 }
 
-// 注册全局变量
+/**
+ * 注册全局变量一定发生在顶层作用域, 所以不需要 env
+ */
 void CRB_add_global_variable(CRB_Interpreter *interpreter,
                              const char      *identifier,
                              CRB_Value       *value)
