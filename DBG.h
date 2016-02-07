@@ -21,7 +21,7 @@ void DBG_set_expression(const char *expression);
 #ifdef DBG_CONTROLLER
 #define DBG_CURRENT_CONTROLLER DBG_CONTROLLER
 #else  // DBG_CONTROLLER
-#define DBG_CURRENT_CONTROLLER dgb_default_controller
+#define DBG_CURRENT_CONTROLLER dbg_default_controller
 #endif // DBG_CONTROLLER
 
 extern DBG_Controller DBG_CURRENT_CONTROLLER;
@@ -39,9 +39,9 @@ extern DBG_Controller DBG_CURRENT_CONTROLLER;
 #define DBG_panic(fmt, ...) \
     (DBG_set(DBG_CURRENT_CONTROLLER, __FILE__, __LINE__),\
      DBG_panic_func(fmt, ## __VA_ARGS__))
-#define DBG_debug_write(fmt, ...) \
+#define DBG_debug_write(level, fmt, ...) \
     (DBG_set(DBG_CURRENT_CONTROLLER, __FILE__, __LINE__),\
-     DBG_debug_write_func(fmt, ## __VA_ARGS__))
+     DBG_debug_write_func(level, fmt, ## __VA_ARGS__))
 
 #endif // DBG_NO_DEBUG
 

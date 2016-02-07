@@ -3,6 +3,7 @@
 #include "crowbar.h"
 #define YYDEBUG 1
 int yyerror(const char *);
+int yylex();  // 消除-std=c99以上的implicit declaration的warning
 %}
 %union {
     char           *identifier;

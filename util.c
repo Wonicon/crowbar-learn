@@ -30,6 +30,14 @@ crb_malloc(size_t size)
     return p;
 }
 
+// 用于分配运行时变量内存
+void *crb_execute_malloc(CRB_Interpreter *interpreter,
+                         size_t           size)
+{
+    void *p = MEM_storage_malloc(interpreter->execute_storage, size);
+    return p;
+}
+
 // 遍历解释器的函数定义链表, 按名字找函数定义指针.
 // 没有找到的情况下返回 NULL.
 FunctionDefinition *
@@ -46,3 +54,26 @@ crb_search_function(const char *name)
     return curr;
 }
 
+Variable *crb_search_global(CRB_Interpreter *interpreter,
+                            const char      *name)
+{
+    for (Variable *curr = interpreter->variable; curr != NULL; curr = curr->next) {
+        if (!strcmp(curr->name, name)) {
+            return curr;
+        }
+    }
+    return NULL;
+}
+
+// 注册全局变量
+void CRB_add_global_variable(CRB_Interpreter *interpreter,
+                             const char      *identifier,
+                             CRB_Value       *value)
+{
+    Variable *new_variable = crb_execute_malloc(interpreter, sizeof(Variable));
+    new_variable->name = crb_execute_malloc(interpreter, strlen(identifier) + 1);
+    strcpy(new_variable->name, identifier);
+    new_variable->value = *value;
+    new_variable->next = interpreter->variable;
+    interpreter->variable = new_variable;
+}

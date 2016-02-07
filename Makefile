@@ -1,7 +1,8 @@
+CC := clang
 FLEX := flex
 BISON := bison
 
-CFLAGS := -Wall -Werror -Wfatal-errors -I. -ggdb3 -MD
+CFLAGS := -Wall -Werror -Wfatal-errors -I. -ggdb3 -MD -std=gnu11
 
 YFILE := $(wildcard *.y)
 LFILE := $(wildcard *.l)

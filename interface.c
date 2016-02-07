@@ -1,6 +1,6 @@
 #include "MEM.h"
-#include "DBG.h"
 #include "crowbar.h"
+#include "execute.h"
 #include <stdlib.h>
 
 CRB_Interpreter *
@@ -34,3 +34,10 @@ CRB_compile(CRB_Interpreter *interpreter, FILE *fp)
     crb_reset_string_literal();
 }
 
+void
+CRB_interpret(CRB_Interpreter *interpreter)
+{
+    interpreter->execute_storage = MEM_open_storage(0);
+    crb_add_std_fp(interpreter);
+    crb_execute_statement_list(interpreter, NULL, interpreter->statement_list);
+}

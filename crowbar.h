@@ -4,52 +4,10 @@
 #include <stdio.h>
 #include "MEM.h"
 #include "CRB.h"
+#include "CRB_dev.h"
 
 #define min(a,b) ((a) < (b) ? (a) : (b))
 #define max(a,b) ((a) > (b) ? (a) : (b))
-
-typedef enum {
-    CRB_BOOLEN_VALUE,
-    CRB_INT_VALUE,
-    CRB_DOUBLE_VALUE,
-    CRB_NATIVE_POINTER_VALUE,
-    CRB_NULL_VALUE,
-} CRB_ValueType;
-
-typedef enum {
-    CRB_FALSE,
-    CRB_TRUE,
-} CRB_Boolean;
-
-typedef struct {
-    int         ref_coutn;
-    char       *string;
-    CRB_Boolean is_literal;
-} CRB_String;
-typedef struct {
-    const char *name;
-} CRB_NativePointerInfo;
-
-typedef struct {
-    CRB_NativePointerInfo *info;
-    void                  *pointer;
-} CRB_NativePointer;
-
-typedef struct {
-    CRB_ValueType type;
-    union {
-        CRB_Boolean       boolean_type;
-        int               int_value;
-        double            double_valube;
-        CRB_String       *string_value;
-        CRB_NativePointer native_pointer;
-    } u;
-} CRB_Value;
-
-typedef struct {
-    void *TODO;
-} Variable;
-
 
 // 集中提前 typedef struct 类型,
 // 方便写链表的 next 域时简化代码,
@@ -356,5 +314,13 @@ FunctionDefinition *
 crb_search_function(const char *name);
 
 void *crb_malloc(size_t size);
+
+Variable *crb_search_global(CRB_Interpreter *interpreter,
+                            const char      *name);
+
+void *crb_execute_malloc(CRB_Interpreter *interpreter,
+                         size_t           size);
+// From native.c
+void crb_add_std_fp(CRB_Interpreter *interpreter);
 
 #endif // CROWBAR_H

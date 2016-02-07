@@ -2,4 +2,6 @@
 *.yy.*
 *.output
 *.o
+*.d
+*.txt
 tags

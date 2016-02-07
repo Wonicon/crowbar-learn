@@ -9,6 +9,7 @@ int main(int argc, char *argv[])
 {
     CRB_Interpreter *interpreter = CRB_create_interpreter();
     CRB_compile(interpreter, fopen(argv[1], "r"));
+    CRB_interpret(interpreter);
     return 0;
 }
 
