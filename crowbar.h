@@ -83,7 +83,7 @@ struct Expression_tag {
         const char            *identifier;
         char                  *string_value;
         int                    int_value;
-        int                    boolean_value;
+        CRB_Boolean            boolean_value;
         double                 double_value;
         AssignExpression       assign_expression;
         BinaryExpression       binary_expression;

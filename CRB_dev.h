@@ -50,7 +50,7 @@ typedef struct {
 
 // 变量
 typedef struct Value_tag {
-    char             *name;
+    const char       *name;
     CRB_Value         value;
     struct Value_tag *next;
 } Variable;

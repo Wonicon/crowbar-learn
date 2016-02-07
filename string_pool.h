@@ -16,4 +16,14 @@ CRB_String *crb_literal_to_crb_string(char *str);
  */
 CRB_String *crb_create_crb_string(char *str);
 
+/**
+ * 增加字符串变量的引用计数
+ */
+void crb_refer_string(CRB_String *str);
+
+/**
+ * 减少字符串变量的引用计数, 如果引用计数为0, 释放变量
+ */
+void crb_release_string(CRB_String *str);
+
 #endif // STRING_POOL_H

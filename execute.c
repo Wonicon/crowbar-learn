@@ -1,15 +1,7 @@
 #include "crowbar.h"
-#include "execute.h"
+#include "eval.h"
 #include "DBG.h"
-#include "CRB_dev.h"
 #include <string.h>
-
-// TODO 在没有实现表达式求值前, 先用宏占个位
-static CRB_Value const_false = {
-    .type = CRB_BOOLEAN_VALUE,
-    .u.boolean_value = CRB_FALSE,
-};
-#define crb_eval_expression(...) (const_false)
 
 /**
  * 统一函数签名与函数名格式
@@ -114,7 +106,7 @@ make_exec_helper(while)
     StatementResult result = { .type = NORMAL_STATEMENT_RESULT };
 
     for (;;) {
-        CRB_Value condition = crb_eval_expression(interpreter, env, statemetn->u.while_s.condition);
+        CRB_Value condition = crb_eval_expression(interpreter, env, statement->u.while_s.condition);
         DBG_assert(condition.type == CRB_BOOLEAN_VALUE, "Invalid condition type");
 
         if (condition.u.boolean_value == CRB_FALSE) break;
