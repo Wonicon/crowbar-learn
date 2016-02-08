@@ -1,5 +1,4 @@
 #include "crowbar.h"
-#include "eval.h"
 #include "DBG.h"
 #include <string.h>
 

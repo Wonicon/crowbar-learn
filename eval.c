@@ -1,8 +1,5 @@
-#include "eval.h"
-#include "string_pool.h"
-#include "DBG.h"
-#include "execute.h"
 #include "crowbar.h"
+#include "DBG.h"
 #include <string.h>
 
 static CRB_Value eval_expression(CRB_Interpreter  *interpreter,

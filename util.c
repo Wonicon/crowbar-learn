@@ -1,8 +1,10 @@
-// util.c
-// 主要包含供 crowbar 其它模块使用的共通函数
+/**
+ * util.c
+ * 包含直接针与解释器结构体交互的函数实现
+ */
 
-#include "MEM.h"
 #include "crowbar.h"
+#include "MEM.h"
 #include <string.h>
 
 static CRB_Interpreter *st_current_interpreter = NULL;
@@ -24,8 +26,7 @@ crb_set_current_interpreter(CRB_Interpreter *inter)
 void *
 crb_malloc(size_t size)
 {
-    MEM_Storage storage =
-        crb_get_current_interpreter()->interpreter_storage;
+    MEM_Storage storage = crb_get_current_interpreter()->interpreter_storage;
     void *p = MEM_storage_malloc(storage, size);
     return p;
 }
@@ -43,8 +44,7 @@ void *crb_execute_malloc(CRB_Interpreter *interpreter,
 FunctionDefinition *
 crb_search_function(const char *name)
 {
-    CRB_Interpreter *interpreter =
-        crb_get_current_interpreter();
+    CRB_Interpreter *interpreter = crb_get_current_interpreter();
     FunctionDefinition *curr = interpreter->function_list;
     for (; curr != NULL; curr = curr->next) {
         if (!strcmp(curr->name, name)) {
