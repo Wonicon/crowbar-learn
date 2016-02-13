@@ -502,10 +502,31 @@ crb_eval_logic_and_or_expression(CRB_Interpreter *interpreter,
     return result;
 }
 
+/**
+ * 计算取负表达式
+ */
+static CRB_Value
+crb_eval_minus_expression(CRB_Interpreter  *interpreter,
+                          LocalEnvironment * env,
+                          Expression       *expr)
+{
+    CRB_Value operand = eval_expression(interpreter, env, expr);
+
+    CRB_Value result = { .type = operand.type };
+    if (operand.type == CRB_INT_VALUE) {
+        result.u.int_value = -operand.u.int_value;
+    }
+    else if (operand.type == CRB_DOUBLE_VALUE) {
+        result.u.double_value = -operand.u.double_value;
+    }
+    else {
+        DBG_panic("neg meets unexpected value");
+    }
+
+    return result;
+}
+
 #if 0
-static CRB_Value crb_eval_minus_expression(CRB_Interpreter  *interpreter,
-                                           LocalEnvironment * env,
-                                           Expression       *expr);
 static CRB_Value eval_function_call_expression(CRB_Interpreter  *interpreter,
                                                LocalEnvironment *env,
                                                Expression       *expr);
