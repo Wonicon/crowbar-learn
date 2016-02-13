@@ -539,9 +539,7 @@ static CRB_Value eval_expression(CRB_Interpreter  *interpreter,
             value = eval_identifier_expression(interpreter, env, expr);
             break;
         case ASSIGN_EXPRESSION:
-            value = eval_assign_expression(interpreter, env,
-                                           expr->u.assign_expression.variable,
-                                           expr->u.assign_expression.operand);
+            value = eval_assign_expression(interpreter, env, expr->u.assign_expression.variable, expr->u.assign_expression.operand);
             break;
         case ADD_EXPRESSION:
         case SUB_EXPRESSION:
@@ -554,11 +552,11 @@ static CRB_Value eval_expression(CRB_Interpreter  *interpreter,
         case GE_EXPRESSION:
         case LT_EXPRESSION:
         case LE_EXPRESSION:
-            crb_eval_binary_expression(interpreter, env, expr->type, expr->u.binary_expression.left, expr->u.binary_expression.right);
+            value = crb_eval_binary_expression(interpreter, env, expr->type, expr->u.binary_expression.left, expr->u.binary_expression.right);
             break;
         case LOGICAL_AND_EXPRESSION:
         case LOGICAL_OR_EXPRESSION:
-            crb_eval_logic_and_or_expression(interpreter, env, expr->type, expr->u.binary_expression.left, expr->u.binary_expression.right);
+            value = crb_eval_logic_and_or_expression(interpreter, env, expr->type, expr->u.binary_expression.left, expr->u.binary_expression.right);
             break;
         case MINUS_EXPRESSION:
             break;
