@@ -7,6 +7,8 @@ static CRB_Value eval_expression(CRB_Interpreter  *interpreter,
                                  LocalEnvironment *env,
                                  Expression       *expr);
 
+static CRB_Boolean eval_binary_null(ExpressionType type, CRB_Value *left, CRB_Value *right);
+
 static CRB_Value eval_int_expression(int int_value)
 {
     CRB_Value v = {
@@ -319,9 +321,49 @@ chain_string(CRB_String *left, CRB_String *right)
 }
 
 /**
+ * 根据表达式类型比较字符串并减少临时变量的引用计数
+ */
+static CRB_Boolean
+eval_compare_string(ExpressionType  type,
+                    CRB_Value      *left,
+                    CRB_Value      *right)
+{
+    int cmp = strcmp(left->u.string_value->string, right->u.string_value->string);
+
+    CRB_Boolean result = CRB_FALSE;
+    switch (type) {
+        case EQ_EXPRESSION:
+            result = cmp == 0 ? CRB_TRUE : CRB_FALSE;
+            break;
+        case NE_EXPRESSION:
+            result = cmp != 0 ? CRB_TRUE : CRB_FALSE;
+            break;
+        case LE_EXPRESSION:
+            result = cmp <= 0 ? CRB_TRUE : CRB_FALSE;
+            break;
+        case LT_EXPRESSION:
+            result = cmp < 0 ? CRB_TRUE : CRB_FALSE;
+            break;
+        case GE_EXPRESSION:
+            result = cmp >= 0 ? CRB_TRUE : CRB_FALSE;
+            break;
+        case GT_EXPRESSION:
+            result = cmp > 0 ? CRB_TRUE : CRB_FALSE;
+            break;
+        default:
+            DBG_panic("Unexpected type");
+    }
+
+    crb_release_string(left->u.string_value);
+    crb_release_string(right->u.string_value);
+
+    return CRB_FALSE;
+}
+
+/**
  * 计算二元表达式
  */
-static void
+static CRB_Value
 crb_eval_binary_expression(CRB_Interpreter  *interpreter,
                            LocalEnvironment *env,
                            ExpressionType    type,
@@ -330,7 +372,7 @@ crb_eval_binary_expression(CRB_Interpreter  *interpreter,
 {
     CRB_Value left_val;
     CRB_Value right_val;
-    CRB_Value result;
+    CRB_Value result = {};
 
     left_val = eval_expression(interpreter, env, left);
     right_val = eval_expression(interpreter, env, right);
@@ -388,6 +430,40 @@ crb_eval_binary_expression(CRB_Interpreter  *interpreter,
         result.type = CRB_STRING_VALUE;
         result.u.string_value = chain_string(left_val.u.string_value, right_str);
     }
+    else if (left_val.type == CRB_STRING_VALUE && right_val.type == CRB_STRING_VALUE && is_compare_operator(type)) {
+        result.type = CRB_STRING_VALUE;
+        result.u.boolean_value = eval_compare_string(type, &left_val, &right_val);
+    }
+    else if ((left_val.type == CRB_NULL_VALUE || right_val.type == CRB_NULL_VALUE) && is_compare_operator(type)) {
+        result.type = CRB_BOOLEAN_VALUE;
+        result.u.boolean_value = eval_binary_null(type, &left_val, &right_val);
+    }
+    return result;
+}
+
+static CRB_Boolean
+eval_binary_null(ExpressionType type,
+                 CRB_Value     *left,
+                 CRB_Value     *right)
+{
+    CRB_Boolean result = CRB_FALSE;
+
+    if (type == EQ_EXPRESSION) {
+        result = (left->type == CRB_NULL_VALUE && right->type == CRB_NULL_VALUE) ?
+                 CRB_TRUE : CRB_FALSE;
+    }
+    else if (type == NE_EXPRESSION) {
+        result = !(left->type == CRB_NULL_VALUE && right->type == CRB_NULL_VALUE) ?
+                 CRB_TRUE : CRB_FALSE;
+    }
+    else {
+        DBG_panic("Unexpected type");
+    }
+
+    release_if_string(left);
+    release_if_string(right);
+
+    return result;
 }
 
 #if 0
