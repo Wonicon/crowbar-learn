@@ -1,5 +1,6 @@
 #include "crowbar.h"
 #include "DBG.h"
+#include "CRB_dev.h"
 #include <string.h>
 
 static CRB_Value eval_expression(CRB_Interpreter  *interpreter,
@@ -282,6 +283,44 @@ eval_binary_double(ExpressionType operator,
     }
 }
 
+/**
+ * 计算布尔型二元表达式
+ */
+static void
+eval_binary_boolean(ExpressionType type, CRB_Boolean left, CRB_Boolean right, CRB_Value *result)
+{
+    result->type = CRB_BOOLEAN_VALUE;
+    if (type == EQ_EXPRESSION) {
+        result->u.boolean_value = (left == right) ? CRB_TRUE : CRB_FALSE;
+    }
+    else if (type == NE_EXPRESSION) {
+        result->u.boolean_value = (left != right) ? CRB_TRUE : CRB_FALSE;
+    }
+}
+
+/**
+ * 链接两个字符串，并自动扩容
+ */
+CRB_String *
+chain_string(CRB_String *left, CRB_String *right)
+{
+    size_t left_len = strlen(left->string);
+    size_t right_len = strlen(right->string);
+
+    size_t len = left_len + right_len;
+    char *str = MEM_malloc(len + 1);
+    strcpy(str, left->string);
+    strcpy(str + left_len, right->string);
+    CRB_String *ret = crb_create_crb_string(str);
+    crb_release_string(left);
+    crb_release_string(right);
+
+    return ret;
+}
+
+/**
+ * 计算二元表达式
+ */
 static void
 crb_eval_binary_expression(CRB_Interpreter  *interpreter,
                            LocalEnvironment *env,
@@ -296,6 +335,9 @@ crb_eval_binary_expression(CRB_Interpreter  *interpreter,
     left_val = eval_expression(interpreter, env, left);
     right_val = eval_expression(interpreter, env, right);
 
+    /**
+     * 根据不同的类型使用不同的函数
+     */
     if (left_val.type == CRB_INT_VALUE && right_val.type == CRB_INT_VALUE) {
         eval_binary_int(type, left_val.u.int_value, right_val.u.int_value, &result);
     }
@@ -309,6 +351,42 @@ crb_eval_binary_expression(CRB_Interpreter  *interpreter,
     else if (left_val.type == CRB_DOUBLE_VALUE && right_val.type == CRB_INT_VALUE) {
         right_val.u.double_value = right_val.u.int_value;
         eval_binary_double(type, left_val.u.double_value, right_val.u.double_value, &result);
+    }
+    else if (left_val.type == CRB_BOOLEAN_VALUE && right_val.type == CRB_BOOLEAN_VALUE) {
+        eval_binary_boolean(type, left_val.u.boolean_value, right_val.u.boolean_value, &result);
+    }
+    else if (left_val.type == CRB_STRING_VALUE && type == ADD_EXPRESSION) {
+        char buf[LINE_BUF_SIZE];
+        CRB_String *right_str;
+
+        if (right_val.type == CRB_INT_VALUE) {
+            sprintf(buf, "%d", right_val.u.int_value);
+            right_str = crb_create_crb_string(MEM_strdup(buf));
+        }
+        else if (right_val.type == CRB_DOUBLE_VALUE) {
+            sprintf(buf, "%f", right_val.u.double_value);
+            right_str = crb_create_crb_string(MEM_strdup(buf));
+        }
+        else if (right_val.type == CRB_BOOLEAN_VALUE) {
+            right_str = crb_create_crb_string(MEM_strdup(right_val.u.boolean_value == CRB_TRUE ? "true" : "false"));
+        }
+        else if (right_val.type == CRB_STRING_VALUE) {
+            right_str = right_val.u.string_value;
+        }
+        else if (right_val.type == CRB_NATIVE_POINTER_VALUE) {
+            sprintf(buf, "(%s:%p)", right_val.u.native_pointer.info->name,
+                    right_val.u.native_pointer.pointer);
+            right_str = crb_create_crb_string(MEM_strdup(buf));
+        }
+        else if (right_val.type == CRB_NULL_VALUE) {
+            right_str = crb_create_crb_string(MEM_strdup("null"));
+        }
+        else {
+            right_str = NULL;
+        }
+
+        result.type = CRB_STRING_VALUE;
+        result.u.string_value = chain_string(left_val.u.string_value, right_str);
     }
 }
 

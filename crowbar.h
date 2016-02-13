@@ -6,6 +6,7 @@
 #include "CRB.h"
 #include "CRB_dev.h"
 
+#define LINE_BUF_SIZE 1024
 #define min(a,b) ((a) < (b) ? (a) : (b))
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
