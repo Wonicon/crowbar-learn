@@ -357,7 +357,7 @@ eval_compare_string(ExpressionType  type,
     crb_release_string(left->u.string_value);
     crb_release_string(right->u.string_value);
 
-    return CRB_FALSE;
+    return result;
 }
 
 /**
@@ -466,11 +466,43 @@ eval_binary_null(ExpressionType type,
     return result;
 }
 
+/**
+ * 计算表达式，实现短路求值
+ */
+static CRB_Value
+crb_eval_logic_and_or_expression(CRB_Interpreter *interpreter,
+                                 LocalEnvironment *env,
+                                 ExpressionType   type,
+                                 Expression      *left,
+                                 Expression      *right)
+{
+    CRB_Value result = { .type = CRB_BOOLEAN_VALUE };
+
+    CRB_Value left_val = eval_expression(interpreter, env, left);
+
+    DBG_assert(left_val.type == CRB_BOOLEAN_VALUE, "Unexpected value");
+
+    if (type == LOGICAL_AND_EXPRESSION && left_val.u.boolean_value == CRB_FALSE) {
+        result.u.boolean_value = CRB_FALSE;
+    }
+    else if (type == LOGICAL_OR_EXPRESSION && left_val.u.boolean_value == CRB_TRUE) {
+        result.u.boolean_value = CRB_TRUE;
+    }
+    else {
+        CRB_Value right_val = eval_expression(interpreter, env, right);
+        DBG_assert(right_val.type == CRB_BOOLEAN_VALUE, "Unexpected value");
+
+        /**
+         * 进入这个分支，即 AND 的一个元素为 true，或者 OR 的一个元素为 false
+         * 这个时候最后取值确实是与第二个元素的值保持一致的。
+         */
+        result.u.boolean_value = right_val.u.boolean_value;
+    }
+
+    return result;
+}
+
 #if 0
-static CRB_Value crb_eval_logic_and_or_expression(CRB_Interpreter *interpreter,
-                                                  ExpressionType   type,
-                                                  Expression      *left,
-                                                  Expression      *right);
 static CRB_Value crb_eval_minus_expression(CRB_Interpreter  *interpreter,
                                            LocalEnvironment * env,
                                            Expression       *expr);
@@ -526,6 +558,7 @@ static CRB_Value eval_expression(CRB_Interpreter  *interpreter,
             break;
         case LOGICAL_AND_EXPRESSION:
         case LOGICAL_OR_EXPRESSION:
+            crb_eval_logic_and_or_expression(interpreter, env, expr->type, expr->u.binary_expression.left, expr->u.binary_expression.right);
             break;
         case MINUS_EXPRESSION:
             break;
