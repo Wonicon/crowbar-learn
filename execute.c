@@ -133,11 +133,11 @@ make_exec_helper(for)
 {
     StatementResult result = { .type = NORMAL_STATEMENT_RESULT };
 
-    CRB_Value condition;
     if (statement->u.for_s.init != NULL) {
-        condition = crb_eval_expression(interpreter, env, statement->u.for_s.init);
+        crb_eval_expression(interpreter, env, statement->u.for_s.init);
     }
 
+    CRB_Value condition;
     for (;;) {
         condition = crb_eval_expression(interpreter, env, statement->u.for_s.condition);
         DBG_assert(condition.type == CRB_BOOLEAN_VALUE, "Invalid condition type");

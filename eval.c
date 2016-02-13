@@ -159,11 +159,160 @@ static CRB_Value eval_null_expression()
     return value;
 }
 
+static inline int
+is_math_operator(ExpressionType type)
+{
+    return type == ADD_EXPRESSION || type == SUB_EXPRESSION || type == MUL_EXPRESSION || type == DIV_EXPRESSION || type == MOD_EXPRESSION;
+}
+
+static inline int
+is_compare_operator(ExpressionType type)
+{
+    return type == EQ_EXPRESSION || type == NE_EXPRESSION || type == GT_EXPRESSION || type == GE_EXPRESSION || type == LE_EXPRESSION || type == LT_EXPRESSION;
+}
+
+/**
+ * 计算整型二元表达式
+ */
+static void
+eval_binary_int(ExpressionType   operator,
+                int              left,
+                int              right,
+                CRB_Value       *result)
+{
+    if (is_math_operator(operator)) {
+        result->type = CRB_INT_VALUE;
+    }
+    else if (is_compare_operator(operator)) {
+        result->type = CRB_BOOLEAN_VALUE;
+    }
+    else {
+        DBG_panic("Unexpected operator type");
+    }
+
+    switch (operator) {
+        case ADD_EXPRESSION:
+            result->u.int_value = left + right;
+            break;
+        case SUB_EXPRESSION:
+            result->u.int_value = left - right;
+            break;
+        case MUL_EXPRESSION:
+            result->u.int_value = left * right;
+            break;
+        case DIV_EXPRESSION:
+            result->u.int_value = left / right;
+            break;
+        case MOD_EXPRESSION:
+            result->u.int_value = left % right;
+            break;
+        case EQ_EXPRESSION:
+            result->u.boolean_value = (left == right) ? CRB_TRUE : CRB_FALSE;
+            break;
+        case NE_EXPRESSION:
+            result->u.boolean_value = (left != right) ? CRB_TRUE : CRB_FALSE;
+            break;
+        case LE_EXPRESSION:
+            result->u.boolean_value = (left <= right) ? CRB_TRUE : CRB_FALSE;
+            break;
+        case LT_EXPRESSION:
+            result->u.boolean_value = (left < right) ? CRB_TRUE : CRB_FALSE;
+            break;
+        case GE_EXPRESSION:
+            result->u.boolean_value = (left >= right) ? CRB_TRUE : CRB_FALSE;
+            break;
+        case GT_EXPRESSION:
+            result->u.boolean_value = (left > right) ? CRB_TRUE : CRB_FALSE;
+        default:
+            DBG_panic("bad case");
+    }
+}
+
+/**
+ * 计算浮点型二元表达式
+ */
+static void
+eval_binary_double(ExpressionType operator,
+                   double         left,
+                   double         right,
+                   CRB_Value     *result)
+{
+    if (is_math_operator(operator)) {
+        result->type = CRB_INT_VALUE;
+    }
+    else if (is_compare_operator(operator)) {
+        result->type = CRB_BOOLEAN_VALUE;
+    }
+    else {
+        DBG_panic("Unexpected operator type");
+    }
+
+    switch (operator) {
+        case ADD_EXPRESSION:
+            result->u.double_value = left + right;
+            break;
+        case SUB_EXPRESSION:
+            result->u.double_value = left - right;
+            break;
+        case MUL_EXPRESSION:
+            result->u.double_value = left * right;
+            break;
+        case DIV_EXPRESSION:
+            result->u.double_value = left / right;
+            break;
+        case EQ_EXPRESSION:
+            result->u.boolean_value = (left == right) ? CRB_TRUE : CRB_FALSE;
+            break;
+        case NE_EXPRESSION:
+            result->u.boolean_value = (left != right) ? CRB_TRUE : CRB_FALSE;
+            break;
+        case LE_EXPRESSION:
+            result->u.boolean_value = (left <= right) ? CRB_TRUE : CRB_FALSE;
+            break;
+        case LT_EXPRESSION:
+            result->u.boolean_value = (left < right) ? CRB_TRUE : CRB_FALSE;
+            break;
+        case GE_EXPRESSION:
+            result->u.boolean_value = (left >= right) ? CRB_TRUE : CRB_FALSE;
+            break;
+        case GT_EXPRESSION:
+            result->u.boolean_value = (left > right) ? CRB_TRUE : CRB_FALSE;
+        default:
+            DBG_panic("bad case");
+    }
+}
+
+static void
+crb_eval_binary_expression(CRB_Interpreter  *interpreter,
+                           LocalEnvironment *env,
+                           ExpressionType    type,
+                           Expression       *left,
+                           Expression       *right)
+{
+    CRB_Value left_val;
+    CRB_Value right_val;
+    CRB_Value result;
+
+    left_val = eval_expression(interpreter, env, left);
+    right_val = eval_expression(interpreter, env, right);
+
+    if (left_val.type == CRB_INT_VALUE && right_val.type == CRB_INT_VALUE) {
+        eval_binary_int(type, left_val.u.int_value, right_val.u.int_value, &result);
+    }
+    else if (left_val.type == CRB_DOUBLE_VALUE && right_val.type == CRB_DOUBLE_VALUE) {
+        eval_binary_double(type, left_val.u.double_value, right_val.u.double_value, &result);
+    }
+    else if (left_val.type == CRB_INT_VALUE && right_val.type == CRB_DOUBLE_VALUE) {
+        left_val.u.double_value = left_val.u.int_value;
+        eval_binary_double(type, left_val.u.double_value, right_val.u.double_value, &result);
+    }
+    else if (left_val.type == CRB_DOUBLE_VALUE && right_val.type == CRB_INT_VALUE) {
+        right_val.u.double_value = right_val.u.int_value;
+        eval_binary_double(type, left_val.u.double_value, right_val.u.double_value, &result);
+    }
+}
+
 #if 0
-static CRB_Value crb_eval_binary_expression(CRB_Interpreter *interpreter,
-                                            ExpressionType   type,
-                                            Expression      *left,
-                                            Expression      *right);
 static CRB_Value crb_eval_logic_and_or_expression(CRB_Interpreter *interpreter,
                                                   ExpressionType   type,
                                                   Expression      *left,
@@ -219,6 +368,7 @@ static CRB_Value eval_expression(CRB_Interpreter  *interpreter,
         case GE_EXPRESSION:
         case LT_EXPRESSION:
         case LE_EXPRESSION:
+            crb_eval_binary_expression(interpreter, env, expr->type, expr->u.binary_expression.left, expr->u.binary_expression.right);
             break;
         case LOGICAL_AND_EXPRESSION:
         case LOGICAL_OR_EXPRESSION:
