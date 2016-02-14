@@ -431,7 +431,7 @@ crb_eval_binary_expression(CRB_Interpreter  *interpreter,
         result.u.string_value = chain_string(left_val.u.string_value, right_str);
     }
     else if (left_val.type == CRB_STRING_VALUE && right_val.type == CRB_STRING_VALUE && is_compare_operator(type)) {
-        result.type = CRB_STRING_VALUE;
+        result.type = CRB_BOOLEAN_VALUE;
         result.u.boolean_value = eval_compare_string(type, &left_val, &right_val);
     }
     else if ((left_val.type == CRB_NULL_VALUE || right_val.type == CRB_NULL_VALUE) && is_compare_operator(type)) {
