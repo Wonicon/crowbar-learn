@@ -227,6 +227,7 @@ eval_binary_int(ExpressionType   operator,
             break;
         case GT_EXPRESSION:
             result->u.boolean_value = (left > right) ? CRB_TRUE : CRB_FALSE;
+            break;
         default:
             DBG_panic("bad case");
     }
