@@ -591,6 +591,35 @@ static CRB_Value call_crowbar_function(CRB_Interpreter    *interpreter,
 }
 
 static CRB_Value
+call_native_function(CRB_Interpreter        *interpreter,
+                     LocalEnvironment       *env,
+                     Expression             *expr,
+                     CRB_NativeFunctionProc  proc)
+{
+    int argc = 0;
+    for (ArgumentList *arg = expr->u.function_call_expression.argument;
+         arg != NULL; arg = arg->next) {
+        argc++;
+    }
+
+    CRB_Value *args = MEM_malloc(sizeof(CRB_Value) * argc);
+
+    int i = 0;
+    for (ArgumentList *arg = expr->u.function_call_expression.argument;
+         arg != NULL; arg = arg->next) {
+        args[i++] = eval_expression(interpreter, env, arg->expression);
+    }
+
+    CRB_Value value = proc(interpreter, argc, args);
+    for (i = 0; i < argc; i++) {
+        release_if_string(&args[i]);
+    }
+    MEM_free(args);
+
+    return value;
+}
+
+static CRB_Value
 eval_function_call_expression(CRB_Interpreter  *interpreter,
                               LocalEnvironment *env,
                               Expression       *expr)
@@ -604,6 +633,9 @@ eval_function_call_expression(CRB_Interpreter  *interpreter,
     switch (func->type) {
         case CROWBAR_FUNCTION_DEFINITION:
             value = call_crowbar_function(interpreter, env, expr, func);
+            break;
+        case NATIVE_FUNCTION_DEFINITION:
+            value = call_native_function(interpreter, env, expr, func->u.native_f.proc);
             break;
         default:
             DBG_panic("Unexpected type");
