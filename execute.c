@@ -234,7 +234,6 @@ StatementResult crb_execute_statement_list(CRB_Interpreter  *interpreter,
     StatementResult result = {};
 
     for (StatementList *curr = list; curr != NULL; curr = curr->next) {
-        DBG_debug_write(0, "exec statement\n");
         result = execute_statement(interpreter, env, curr->statement);
         if (result.type != NORMAL_STATEMENT_RESULT) {
             break;

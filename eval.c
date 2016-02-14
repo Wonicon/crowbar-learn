@@ -2,6 +2,7 @@
 #include "DBG.h"
 #include "CRB_dev.h"
 #include <string.h>
+#include <math.h>  // fmod
 
 static CRB_Value eval_expression(CRB_Interpreter  *interpreter,
                                  LocalEnvironment *env,
@@ -263,6 +264,9 @@ eval_binary_double(ExpressionType operator,
         case DIV_EXPRESSION:
             result->u.double_value = left / right;
             break;
+        case MOD_EXPRESSION:
+            result->u.double_value = fmod(left, right);
+            break;
         case EQ_EXPRESSION:
             result->u.boolean_value = (left == right) ? CRB_TRUE : CRB_FALSE;
             break;
@@ -280,8 +284,9 @@ eval_binary_double(ExpressionType operator,
             break;
         case GT_EXPRESSION:
             result->u.boolean_value = (left > right) ? CRB_TRUE : CRB_FALSE;
+            break;
         default:
-            DBG_panic("bad case");
+            DBG_panic("bad case %d\n", operator);
     }
 }
 
@@ -667,7 +672,6 @@ static CRB_Value eval_expression(CRB_Interpreter  *interpreter,
             break;
         case STRING_EXPRESSION:
             value = eval_string_expression(expr->u.string_value);
-            DBG_debug_write(0, "string: %s\n", value.u.string_value->string);
             break;
         case BOOLEAN_EXPRESSION:
             value = eval_boolean_expression(expr->u.boolean_value);

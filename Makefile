@@ -17,7 +17,8 @@ OBJS := $(COBJS) $(LOBJ) $(YOBJ)
 TARGET := crowbar
 
 $(TARGET): $(OBJS)
-	$(CC) -o $(TARGET) $(OBJS)
+# -lm for fmod in math.h
+	$(CC) -o $(TARGET) $(OBJS) -lm
 	@ctags -R * 2> /dev/null
 
 $(YCFILE): $(YFILE)
