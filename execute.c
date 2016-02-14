@@ -1,5 +1,6 @@
 #include "crowbar.h"
 #include "DBG.h"
+#include "CRB_dev.h"
 #include <string.h>
 
 /**
@@ -168,9 +169,22 @@ make_exec_helper(break)
     return result;
 }
 
-make_exec_helper(continue){
+make_exec_helper(continue)
+{
     StatementResult result = { .type = CONTINUE_STATEMENT_RESULT };
     return  result;
+}
+
+make_exec_helper(return)
+{
+    StatementResult result = { .type = RETURN_STATEMENT_RESULT };
+    if (statement->u.return_s.return_value != NULL) {
+        result.u.return_value = crb_eval_expression(interpreter, env, statement->u.return_s.return_value);
+    }
+    else {
+        result.u.return_value.type = CRB_NULL_VALUE;
+    }
+    return result;
 }
 
 static StatementResult execute_statement(CRB_Interpreter  *interpreter,
@@ -203,8 +217,11 @@ static StatementResult execute_statement(CRB_Interpreter  *interpreter,
         case CONTINUE_STATEMENT:
             result = execute_continue_statement(interpreter, env, statement);
             break;
+        case RETURN_STATEMENT:
+            result = execute_return_statement(interpreter, env, statement);
+            break;
         default:
-            DBG_panic("Invalid statement");
+            DBG_panic("Invalid statement %d", statement->type);
     }
     return result;
 }
