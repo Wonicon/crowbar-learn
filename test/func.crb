@@ -1,0 +1,15 @@
+function A()
+{
+    return 10;
+}
+
+function B()
+{
+    return "hello";
+}
+
+if (A() == 10) { "hello"; } else { "loli"; }
+
+if (B() == "hello") { "good"; } else { "bad"; }
+
+print("Hello world\n");
