@@ -242,7 +242,7 @@ eval_binary_double(ExpressionType operator,
                    CRB_Value     *result)
 {
     if (is_math_operator(operator)) {
-        result->type = CRB_INT_VALUE;
+        result->type = CRB_DOUBLE_VALUE;
     }
     else if (is_compare_operator(operator)) {
         result->type = CRB_BOOLEAN_VALUE;
