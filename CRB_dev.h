@@ -67,15 +67,15 @@ void CRB_add_global_variable(CRB_Interpreter *interpreter,
  * name        -> 函数名
  * args        -> 实际参数链表
  */
-typedef CRB_Value CRB_NativeFunctionProc(CRB_Interpreter *interpreter,
-                                         const char      *name,
-                                         CRB_Value       *args);
+typedef CRB_Value (*CRB_NativeFunctionProc)(CRB_Interpreter *interpreter,
+                                            int              argc,
+                                            CRB_Value       *args);
 
 /**
  * 添加内置函数
  */
 void CRB_add_native_function(CRB_Interpreter        *interpreter,
                              const char             *name,
-                             CRB_NativeFunctionProc *proc);
+                             CRB_NativeFunctionProc  proc);
 
 #endif // CRB_DEV_H

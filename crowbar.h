@@ -238,7 +238,7 @@ struct FunctionDefinition_tag {
             Block         *block;
         } crowbar_f;
         struct {
-            CRB_NativeFunctionProc *proc;
+            CRB_NativeFunctionProc proc;
         } native_f;
     } u;
 };
@@ -425,5 +425,12 @@ void crb_refer_string(CRB_String *str);
 
 // 减少字符串变量的引用计数, 如果引用计数为0, 释放变量
 void crb_release_string(CRB_String *str);
+
+/**
+ * 默认内置函数定义
+ */
+CRB_Value crb_native_print(CRB_Interpreter *interpreter,
+                           int              argc,
+                           CRB_Value       *argv);
 
 #endif // CROWBAR_H
