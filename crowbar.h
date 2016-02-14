@@ -237,6 +237,9 @@ struct FunctionDefinition_tag {
             ParameterList *parameter;
             Block         *block;
         } crowbar_f;
+        struct {
+            CRB_NativeFunctionProc *proc;
+        } native_f;
     } u;
 };
 

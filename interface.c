@@ -1,5 +1,4 @@
 #include "crowbar.h"
-#include "MEM.h"
 #include <stdlib.h>
 
 CRB_Interpreter *
@@ -39,4 +38,20 @@ CRB_interpret(CRB_Interpreter *interpreter)
     interpreter->execute_storage = MEM_open_storage(0);
     crb_add_std_fp(interpreter);
     crb_execute_statement_list(interpreter, NULL, interpreter->statement_list);
+}
+
+void
+CRB_add_native_function(CRB_Interpreter        *interpreter,
+                        const char             *name,
+                        CRB_NativeFunctionProc *proc)
+{
+    // 分配函数定义空间
+    FunctionDefinition *fd = crb_malloc(sizeof(FunctionDefinition));
+    // 初始化
+    fd->name = name;
+    fd->type = NATIVE_FUNCTION_DEFINITION;
+    fd->u.native_f.proc = proc;
+    // 插入解释器函数定义链表
+    fd->next = interpreter->function_list;
+    interpreter->function_list = fd;
 }
