@@ -140,10 +140,11 @@ make_exec_helper(for)
 
     CRB_Value condition;
     for (;;) {
-        condition = crb_eval_expression(interpreter, env, statement->u.for_s.condition);
-        DBG_assert(condition.type == CRB_BOOLEAN_VALUE, "Invalid condition type");
-
-        if (condition.u.boolean_value == CRB_FALSE) break;
+        if (statement->u.for_s.condition != NULL) {
+            condition = crb_eval_expression(interpreter, env, statement->u.for_s.condition);
+            DBG_assert(condition.type == CRB_BOOLEAN_VALUE, "Invalid condition type");
+            if (condition.u.boolean_value == CRB_FALSE) break;
+        }
 
         result = crb_execute_statement_list(interpreter, env, statement->u.for_s.block->statement_list);
 
