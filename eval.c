@@ -526,11 +526,95 @@ crb_eval_minus_expression(CRB_Interpreter  *interpreter,
     return result;
 }
 
-#if 0
-static CRB_Value eval_function_call_expression(CRB_Interpreter  *interpreter,
-                                               LocalEnvironment *env,
-                                               Expression       *expr);
-#endif
+/**
+ * 创建一个新的运行环境（符号表）
+ * 用于函数调用前，在过程调用中除了参数外，函数的运行环境是空的。
+ */
+static LocalEnvironment *
+alloc_local_environment()
+{
+    LocalEnvironment *ret = MEM_malloc(sizeof(LocalEnvironment));
+    ret->variable = NULL;
+    ret->global_variable = NULL;
+    return ret;
+}
+
+/**
+ * 释放临时运行环境，释放的对象有：
+ * 局部变量的定义，字符串的引用计数，全局变量的引用
+ */
+static void
+dispose_local_environment(LocalEnvironment *env)
+{
+    while (env->variable != NULL) {
+        Variable *temp = env->variable;
+        release_if_string(&temp->value);
+        env->variable = temp->next;
+        MEM_free(temp);
+    }
+}
+
+/**
+ * 分配环境，准备参数，递归执行代码快
+ */
+static CRB_Value call_crowbar_function(CRB_Interpreter    *interpreter,
+                                       LocalEnvironment   *env,
+                                       Expression         *expr,
+                                       FunctionDefinition *func)
+{
+    LocalEnvironment *local_env = alloc_local_environment();
+    ArgumentList *arg;
+    ParameterList *param;
+    for (arg = expr->u.function_call_expression.argument, param = func->u.crowbar_f.parameter;
+         arg != NULL;
+         arg = arg->next, param = param->next) {
+        DBG_assert(param != NULL, "...");
+        CRB_Value arg_val = eval_expression(interpreter, env, arg->expression);
+        crb_add_local_variable(local_env, param->name,  &arg_val);
+    }
+
+    DBG_assert(param == NULL, "...");
+
+    StatementResult result = crb_execute_statement_list(interpreter, local_env, func->u.crowbar_f.block->statement_list);
+
+    CRB_Value value;
+    if (result.type == RETURN_STATEMENT_RESULT) {
+        value = result.u.return_value;
+    }
+    else {
+        value.type = CRB_NULL_VALUE;
+    }
+
+    dispose_local_environment(local_env);
+
+    return value;
+}
+
+static CRB_Value
+eval_function_call_expression(CRB_Interpreter  *interpreter,
+                              LocalEnvironment *env,
+                              Expression       *expr)
+{
+    const char *identifier = expr->u.function_call_expression.identifier;
+    FunctionDefinition *func = crb_search_function(identifier);
+
+    DBG_assert(func != NULL, "Function %s misfound", identifier);
+
+    CRB_Value value;
+    switch (func->type) {
+        case CROWBAR_FUNCTION_DEFINITION:
+            value = call_crowbar_function(interpreter, env, expr, func);
+            break;
+        default:
+            DBG_panic("Unexpected type");
+    }
+
+    return value;
+}
+
+/**
+ * 将表达式分发到对应的处理函数上
+ */
 static CRB_Value eval_expression(CRB_Interpreter  *interpreter,
                                  LocalEnvironment *env,
                                  Expression       *expr)
@@ -580,8 +664,10 @@ static CRB_Value eval_expression(CRB_Interpreter  *interpreter,
             value = crb_eval_logic_and_or_expression(interpreter, env, expr->type, expr->u.binary_expression.left, expr->u.binary_expression.right);
             break;
         case MINUS_EXPRESSION:
+            value = crb_eval_minus_expression(interpreter, env, expr->u.minus_expression);
             break;
         case FUNCTION_CALL_EXPRESSION:
+            value = eval_function_call_expression(interpreter, env, expr);
             break;
         default:
             DBG_panic("Invalid expression!\n");
