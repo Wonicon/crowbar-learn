@@ -20,7 +20,7 @@ int yylex();  // 消除-std=c99以上的implicit declaration的warning
 %token <expression> DOUBLE_LITERAL
 %token <expression> STRING_LITERAL
 %token <identifier> IDENTIFIER
-%token FUNCTION IF ELSE ELSIF WHILE FOR RETURN_T BREAK CONTINUE NULL_T LP RP LC RC SEMICOLON COMMA ASSIGN LOGICAL_AND LOGICAL_OR EQ NE GT GE LT LE ADD SUB MUL DIV MOD TRUE_T FALSE_T GLOBAL_T
+%token FUNCTION IF ELSE ELSIF WHILE FOR RETURN_T BREAK CONTINUE NULL_T LP RP LC RC SEMICOLON COMMA ASSIGN LOGICAL_AND LOGICAL_OR EQ NE GT GE LT LE ADD SUB MUL DIV MOD TRUE_T FALSE_T GLOBAL_T INCREMENT DECREMENT DOT LB RB
 
 /* Declare types for for non-terminal symbols */
 %type <parameter_list>
@@ -38,6 +38,9 @@ additive_expression
 multiplicative_expression
 unary_expression
 primary_expression
+postfix_expression
+array_literal /* 数组初始化表达式 */
+expression_list /* 逗号分割的表达式列表 */
 %type <statement>
 statement
 global_statement
@@ -111,7 +114,7 @@ statement_list
     ;
 expression
     : logical_or_expression
-    | IDENTIFIER ASSIGN expression
+    | postfix_expression ASSIGN expression
     {
         $$ = crb_create_assign_expression($1, $3);
     }
@@ -187,11 +190,20 @@ multiplicative_expression
     }
     ;
 unary_expression
-    : primary_expression
+    : postfix_expression
     | SUB unary_expression
     {
         $$ = crb_create_minus_expression($2);
     }
+    ;
+/* 左值表达式 */
+postfix_expression
+    : primary_expression
+    | postfix_expression LB expression RB
+    | postfix_expression DOT IDENTIFIER LP argument_list RP
+    | postfix_expression DOT IDENTIFIER LP RP
+    | postfix_expression INCREMENT
+    | postfix_expression DECREMENT
     ;
 primary_expression
     : IDENTIFIER LP argument_list RP
@@ -225,6 +237,16 @@ primary_expression
     {
         $$ = crb_create_null_expression();
     }
+    | array_literal
+    ;
+array_literal
+    : LC expression_list RC { $$ = $2; /* TODO */ }
+    | LC expression_list COMMA RC { $$ = $2; /* TODO */ }
+    ;
+expression_list
+    : expression
+    | expression_list COMMA expression
+    | { $$ = NULL; }
     ;
 statement
     : expression SEMICOLON

@@ -273,7 +273,7 @@ Expression *
 crb_alloc_expression(ExpressionType type);
 
 Expression *
-crb_create_assign_expression(const char *variable, Expression *operand);
+crb_create_assign_expression(Expression *left_value, Expression *operand);
 
 Expression *
 crb_create_binary_expression(ExpressionType operator, Expression *left, Expression *right);

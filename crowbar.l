@@ -36,6 +36,8 @@ increment_line_number()
 <INITIAL>")"        return RP;
 <INITIAL>"{"        return LC;
 <INITIAL>"}"        return RC;
+<INITIAL>"["        return LB;
+<INITIAL>"]"        return RB;
 <INITIAL>";"        return SEMICOLON;
 <INITIAL>","        return COMMA;
 <INITIAL>"&&"       return LOGICAL_AND;
@@ -47,11 +49,14 @@ increment_line_number()
 <INITIAL>">="       return GE;
 <INITIAL>"<"        return LT;
 <INITIAL>"<="       return LE;
+<INITIAL>"++"       return INCREMENT;
+<INITIAL>"--"       return DECREMENT;
 <INITIAL>"+"        return ADD;
 <INITIAL>"-"        return SUB;
 <INITIAL>"*"        return MUL;
 <INITIAL>"/"        return DIV;
 <INITIAL>"%"        return MOD;
+<INITIAL>"\."       return DOT;
  /* 标识符: 变量名, 函数名等 */
 <INITIAL>[A-Za-z_][A-Za-z_0-9]* {
     yylval.identifier = crb_create_identifier(yytext);
